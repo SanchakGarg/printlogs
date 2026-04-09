@@ -130,7 +130,6 @@ export default function Home() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-24">ID</TableHead>
                     <TableHead>Print Name</TableHead>
                     <TableHead>Printer</TableHead>
                     <TableHead>Material</TableHead>
@@ -145,11 +144,6 @@ export default function Home() {
                 <TableBody>
                   {logs.map((log) => (
                     <TableRow key={log.id}>
-                      <TableCell>
-                        <span className="font-mono text-xs text-muted-foreground">
-                          {shortId(log.log_id)}
-                        </span>
-                      </TableCell>
                       <TableCell className="font-medium">{log.print_name}</TableCell>
                       <TableCell>
                         <Badge style={badgeColor(log.printer_name)}>
@@ -193,12 +187,7 @@ export default function Home() {
               {logs.map((log) => (
                 <div key={log.id} className="rounded-lg border p-4 space-y-2 bg-card">
                   <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <p className="font-semibold text-base">{log.print_name}</p>
-                      <span className="font-mono text-xs text-muted-foreground">
-                        {shortId(log.log_id)}
-                      </span>
-                    </div>
+                    <p className="font-semibold text-base">{log.print_name}</p>
                     <div className="flex items-center gap-1 shrink-0">
                       <span className="text-xs text-muted-foreground">
                         {formatDate(log.printed_at)}
