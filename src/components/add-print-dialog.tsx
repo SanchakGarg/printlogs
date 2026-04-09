@@ -122,7 +122,7 @@ export function AddPrintDialog({ open, onOpenChange, suggestions, onSuccess }: A
           </div>
 
           <div className="space-y-1">
-            <Label htmlFor="person_name">Done For (Name) *</Label>
+            <Label htmlFor="person_name">For *</Label>
             <AutocompleteInput
               id="person_name"
               value={form.person_name}

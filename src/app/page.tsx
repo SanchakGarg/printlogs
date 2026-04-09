@@ -13,6 +13,8 @@ import {
 } from "@/components/ui/table";
 import { AddPrintDialog } from "@/components/add-print-dialog";
 import { PrintLog, Suggestions } from "@/types";
+import { badgeColor } from "@/lib/badge-color";
+import { Trash2 } from "lucide-react";
 
 const emptySuggestions: Suggestions = {
   print_names: [],
@@ -26,6 +28,8 @@ export default function Home() {
   const [logs, setLogs] = React.useState<PrintLog[]>([]);
   const [suggestions, setSuggestions] = React.useState<Suggestions>(emptySuggestions);
   const [dialogOpen, setDialogOpen] = React.useState(false);
+  const [deletingId, setDeletingId] = React.useState<number | null>(null);
+  const [confirmId, setConfirmId] = React.useState<number | null>(null);
   const [loading, setLoading] = React.useState(true);
 
   async function fetchData() {
@@ -42,12 +46,60 @@ export default function Home() {
     fetchData();
   }, []);
 
+  async function handleDelete(id: number) {
+    setDeletingId(id);
+    await fetch(`/api/prints/${id}`, { method: "DELETE" });
+    setConfirmId(null);
+    setDeletingId(null);
+    setLogs((prev) => prev.filter((l) => l.id !== id));
+  }
+
   function formatDate(iso: string) {
     return new Date(iso).toLocaleDateString("en-GB", {
       day: "2-digit",
       month: "short",
       year: "numeric",
     });
+  }
+
+  function DeleteButton({ id }: { id: number }) {
+    const isConfirming = confirmId === id;
+    const isDeleting = deletingId === id;
+
+    if (isConfirming) {
+      return (
+        <div className="flex items-center gap-1">
+          <Button
+            size="sm"
+            variant="destructive"
+            className="h-7 px-2 text-xs"
+            disabled={isDeleting}
+            onClick={() => handleDelete(id)}
+          >
+            {isDeleting ? "…" : "Delete"}
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-7 px-2 text-xs"
+            onClick={() => setConfirmId(null)}
+          >
+            Cancel
+          </Button>
+        </div>
+      );
+    }
+
+    return (
+      <Button
+        size="icon"
+        variant="ghost"
+        className="h-7 w-7 text-muted-foreground hover:text-destructive"
+        onClick={() => setConfirmId(id)}
+      >
+        <Trash2 className="h-3.5 w-3.5" />
+      </Button>
+    );
   }
 
   return (
@@ -82,10 +134,11 @@ export default function Home() {
                     <TableHead>Printer</TableHead>
                     <TableHead>Material</TableHead>
                     <TableHead>Weight</TableHead>
-                    <TableHead>Done For</TableHead>
+                    <TableHead>For</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>Description</TableHead>
                     <TableHead className="text-right">Date</TableHead>
+                    <TableHead />
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -93,10 +146,14 @@ export default function Home() {
                     <TableRow key={log.id}>
                       <TableCell className="font-medium">{log.print_name}</TableCell>
                       <TableCell>
-                        <Badge variant="secondary">{log.printer_name}</Badge>
+                        <Badge style={badgeColor(log.printer_name)}>
+                          {log.printer_name}
+                        </Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline">{log.material}</Badge>
+                        <Badge style={badgeColor(log.material)}>
+                          {log.material}
+                        </Badge>
                       </TableCell>
                       <TableCell>
                         {log.weight_grams != null ? `${log.weight_grams}g` : "—"}
@@ -116,6 +173,9 @@ export default function Home() {
                       <TableCell className="text-right text-sm text-muted-foreground whitespace-nowrap">
                         {formatDate(log.created_at)}
                       </TableCell>
+                      <TableCell className="text-right">
+                        <DeleteButton id={log.id} />
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -128,13 +188,20 @@ export default function Home() {
                 <div key={log.id} className="rounded-lg border p-4 space-y-2 bg-card">
                   <div className="flex items-start justify-between gap-2">
                     <p className="font-semibold text-base">{log.print_name}</p>
-                    <span className="text-xs text-muted-foreground whitespace-nowrap">
-                      {formatDate(log.created_at)}
-                    </span>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-xs text-muted-foreground">
+                        {formatDate(log.created_at)}
+                      </span>
+                      <DeleteButton id={log.id} />
+                    </div>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    <Badge variant="secondary">{log.printer_name}</Badge>
-                    <Badge variant="outline">{log.material}</Badge>
+                    <Badge style={badgeColor(log.printer_name)}>
+                      {log.printer_name}
+                    </Badge>
+                    <Badge style={badgeColor(log.material)}>
+                      {log.material}
+                    </Badge>
                     {log.weight_grams != null && (
                       <Badge variant="outline">{log.weight_grams}g</Badge>
                     )}
