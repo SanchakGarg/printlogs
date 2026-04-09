@@ -129,7 +129,7 @@ export function PrintFormDialog({
               value={form.print_name}
               onChange={set("print_name")}
               suggestions={suggestions.print_names}
-              placeholder="e.g. Benchy"
+              placeholder="Benchy"
             />
           </div>
 
@@ -141,7 +141,7 @@ export function PrintFormDialog({
               value={form.printer_name}
               onChange={set("printer_name")}
               suggestions={suggestions.printer_names}
-              placeholder="e.g. Ava"
+              placeholder="Ava"
             />
           </div>
 
@@ -193,7 +193,7 @@ export function PrintFormDialog({
               step="0.01"
               value={form.weight_grams}
               onChange={(e) => set("weight_grams")(e.target.value)}
-              placeholder="e.g. 45.5"
+              placeholder="45.5"
             />
           </div>
 
