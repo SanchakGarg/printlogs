@@ -30,11 +30,20 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# env files
+.env
+.env.local
+.env.*.local
+# keep .env.example tracked
+!.env.example
 
 # vercel
 .vercel
+
+# Claude Code
+.claude/
+CLAUDE.md
+memory/
 
 # typescript
 *.tsbuildinfo

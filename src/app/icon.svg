@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- Frame top bar -->
+  <rect x="8" y="6" width="48" height="6" rx="2" fill="#6366f1"/>
+  <!-- Frame left rail -->
+  <rect x="8" y="6" width="5" height="46" rx="2" fill="#6366f1"/>
+  <!-- Frame right rail -->
+  <rect x="51" y="6" width="5" height="46" rx="2" fill="#6366f1"/>
+  <!-- Print bed -->
+  <rect x="12" y="46" width="40" height="5" rx="2" fill="#a5b4fc"/>
+  <!-- Bed legs -->
+  <rect x="15" y="51" width="4" height="7" rx="1" fill="#818cf8"/>
+  <rect x="45" y="51" width="4" height="7" rx="1" fill="#818cf8"/>
+  <!-- Gantry bar -->
+  <rect x="13" y="18" width="38" height="4" rx="2" fill="#818cf8"/>
+  <!-- Extruder body -->
+  <rect x="27" y="14" width="10" height="14" rx="2" fill="#4f46e5"/>
+  <!-- Nozzle -->
+  <polygon points="30,28 34,28 32,35" fill="#4f46e5"/>
+  <!-- Filament strand -->
+  <line x1="32" y1="35" x2="32" y2="44" stroke="#e0e7ff" stroke-width="1.5" stroke-dasharray="2 2"/>
+</svg>
