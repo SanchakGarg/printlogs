@@ -4,33 +4,28 @@ import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { AddPrintDialog } from "@/components/add-print-dialog";
+import { PrintFormDialog } from "@/components/print-form-dialog";
 import { PrintLog, Suggestions } from "@/types";
-import { badgeColor } from "@/lib/badge-color";
-import { Trash2 } from "lucide-react";
+import { badgeColor, materialColor } from "@/lib/badge-color";
+import { Trash2, Pencil } from "lucide-react";
 
 const emptySuggestions: Suggestions = {
-  print_names: [],
+  print_names:   [],
   printer_names: [],
-  materials: [],
-  person_names: [],
+  person_names:  [],
   person_emails: [],
 };
 
 export default function Home() {
-  const [logs, setLogs] = React.useState<PrintLog[]>([]);
+  const [logs, setLogs]             = React.useState<PrintLog[]>([]);
   const [suggestions, setSuggestions] = React.useState<Suggestions>(emptySuggestions);
-  const [dialogOpen, setDialogOpen] = React.useState(false);
+  const [addOpen, setAddOpen]       = React.useState(false);
+  const [editLog, setEditLog]       = React.useState<PrintLog | null>(null);
   const [deletingId, setDeletingId] = React.useState<number | null>(null);
-  const [confirmId, setConfirmId] = React.useState<number | null>(null);
-  const [loading, setLoading] = React.useState(true);
+  const [confirmId, setConfirmId]   = React.useState<number | null>(null);
+  const [loading, setLoading]       = React.useState(true);
 
   async function fetchData() {
     const [logsRes, suggestionsRes] = await Promise.all([
@@ -42,9 +37,7 @@ export default function Home() {
     setLoading(false);
   }
 
-  React.useEffect(() => {
-    fetchData();
-  }, []);
+  React.useEffect(() => { fetchData(); }, []);
 
   async function handleDelete(id: number) {
     setDeletingId(id);
@@ -56,49 +49,57 @@ export default function Home() {
 
   function formatDate(iso: string) {
     return new Date(iso).toLocaleDateString("en-GB", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
+      day: "2-digit", month: "short", year: "numeric",
     });
   }
 
-  function DeleteButton({ id }: { id: number }) {
-    const isConfirming = confirmId === id;
-    const isDeleting = deletingId === id;
+  function shortId(uuid: string) {
+    return uuid?.replace(/-/g, "").slice(0, 8) ?? "—";
+  }
 
-    if (isConfirming) {
-      return (
-        <div className="flex items-center gap-1">
-          <Button
-            size="sm"
-            variant="destructive"
-            className="h-7 px-2 text-xs"
-            disabled={isDeleting}
-            onClick={() => handleDelete(id)}
-          >
-            {isDeleting ? "…" : "Delete"}
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            className="h-7 px-2 text-xs"
-            onClick={() => setConfirmId(null)}
-          >
-            Cancel
-          </Button>
-        </div>
-      );
-    }
+  function ActionButtons({ log }: { log: PrintLog }) {
+    const isConfirming = confirmId === log.id;
+    const isDeleting   = deletingId === log.id;
 
     return (
-      <Button
-        size="icon"
-        variant="ghost"
-        className="h-7 w-7 text-muted-foreground hover:text-destructive"
-        onClick={() => setConfirmId(id)}
-      >
-        <Trash2 className="h-3.5 w-3.5" />
-      </Button>
+      <div className="flex items-center justify-end gap-1">
+        {isConfirming ? (
+          <>
+            <Button
+              size="sm" variant="destructive"
+              className="h-7 px-2 text-xs"
+              disabled={isDeleting}
+              onClick={() => handleDelete(log.id)}
+            >
+              {isDeleting ? "…" : "Delete"}
+            </Button>
+            <Button
+              size="sm" variant="ghost"
+              className="h-7 px-2 text-xs"
+              onClick={() => setConfirmId(null)}
+            >
+              Cancel
+            </Button>
+          </>
+        ) : (
+          <>
+            <Button
+              size="icon" variant="ghost"
+              className="h-7 w-7 text-muted-foreground hover:text-foreground"
+              onClick={() => setEditLog(log)}
+            >
+              <Pencil className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              size="icon" variant="ghost"
+              className="h-7 w-7 text-muted-foreground hover:text-destructive"
+              onClick={() => setConfirmId(log.id)}
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </Button>
+          </>
+        )}
+      </div>
     );
   }
 
@@ -113,12 +114,11 @@ export default function Home() {
               {logs.length} {logs.length === 1 ? "log" : "logs"} recorded
             </p>
           </div>
-          <Button onClick={() => setDialogOpen(true)}>+ Add Print</Button>
+          <Button onClick={() => setAddOpen(true)}>+ Add Print</Button>
         </div>
 
-        {/* Content */}
         {loading ? (
-          <div className="text-center py-20 text-muted-foreground">Loading...</div>
+          <div className="text-center py-20 text-muted-foreground">Loading…</div>
         ) : logs.length === 0 ? (
           <div className="text-center py-20 text-muted-foreground">
             No prints logged yet. Add your first one!
@@ -130,6 +130,7 @@ export default function Home() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-24">ID</TableHead>
                     <TableHead>Print Name</TableHead>
                     <TableHead>Printer</TableHead>
                     <TableHead>Material</TableHead>
@@ -144,6 +145,11 @@ export default function Home() {
                 <TableBody>
                   {logs.map((log) => (
                     <TableRow key={log.id}>
+                      <TableCell>
+                        <span className="font-mono text-xs text-muted-foreground">
+                          {shortId(log.log_id)}
+                        </span>
+                      </TableCell>
                       <TableCell className="font-medium">{log.print_name}</TableCell>
                       <TableCell>
                         <Badge style={badgeColor(log.printer_name)}>
@@ -151,7 +157,7 @@ export default function Home() {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge style={badgeColor(log.material)}>
+                        <Badge style={materialColor(log.material)}>
                           {log.material}
                         </Badge>
                       </TableCell>
@@ -167,14 +173,14 @@ export default function Home() {
                           {log.person_email}
                         </a>
                       </TableCell>
-                      <TableCell className="max-w-[200px] truncate text-muted-foreground text-sm">
+                      <TableCell className="max-w-[180px] truncate text-muted-foreground text-sm">
                         {log.description || "—"}
                       </TableCell>
                       <TableCell className="text-right text-sm text-muted-foreground whitespace-nowrap">
-                        {formatDate(log.created_at)}
+                        {formatDate(log.printed_at)}
                       </TableCell>
-                      <TableCell className="text-right">
-                        <DeleteButton id={log.id} />
+                      <TableCell>
+                        <ActionButtons log={log} />
                       </TableCell>
                     </TableRow>
                   ))}
@@ -187,19 +193,24 @@ export default function Home() {
               {logs.map((log) => (
                 <div key={log.id} className="rounded-lg border p-4 space-y-2 bg-card">
                   <div className="flex items-start justify-between gap-2">
-                    <p className="font-semibold text-base">{log.print_name}</p>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <span className="text-xs text-muted-foreground">
-                        {formatDate(log.created_at)}
+                    <div>
+                      <p className="font-semibold text-base">{log.print_name}</p>
+                      <span className="font-mono text-xs text-muted-foreground">
+                        {shortId(log.log_id)}
                       </span>
-                      <DeleteButton id={log.id} />
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <span className="text-xs text-muted-foreground">
+                        {formatDate(log.printed_at)}
+                      </span>
+                      <ActionButtons log={log} />
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <Badge style={badgeColor(log.printer_name)}>
                       {log.printer_name}
                     </Badge>
-                    <Badge style={badgeColor(log.material)}>
+                    <Badge style={materialColor(log.material)}>
                       {log.material}
                     </Badge>
                     {log.weight_grams != null && (
@@ -231,11 +242,21 @@ export default function Home() {
         )}
       </div>
 
-      <AddPrintDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
+      {/* Add dialog */}
+      <PrintFormDialog
+        open={addOpen}
+        onOpenChange={setAddOpen}
         suggestions={suggestions}
         onSuccess={fetchData}
+      />
+
+      {/* Edit dialog */}
+      <PrintFormDialog
+        open={!!editLog}
+        onOpenChange={(o) => { if (!o) setEditLog(null); }}
+        suggestions={suggestions}
+        onSuccess={fetchData}
+        log={editLog ?? undefined}
       />
     </main>
   );

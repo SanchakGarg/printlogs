@@ -1,6 +1,6 @@
--- Run this once to create the database (or let the app auto-create the table)
 CREATE TABLE IF NOT EXISTS print_logs (
   id           SERIAL PRIMARY KEY,
+  log_id       UUID DEFAULT gen_random_uuid() NOT NULL,
   print_name   TEXT NOT NULL,
   printer_name TEXT NOT NULL,
   material     TEXT NOT NULL,
@@ -8,5 +8,6 @@ CREATE TABLE IF NOT EXISTS print_logs (
   person_name  TEXT NOT NULL,
   person_email TEXT NOT NULL,
   description  TEXT,
+  printed_at   DATE DEFAULT CURRENT_DATE NOT NULL,
   created_at   TIMESTAMPTZ DEFAULT NOW()
 );
